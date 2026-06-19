@@ -1,0 +1,29 @@
+<mat-form-field appearance="outline" class="search-field">
+  <mat-label>Search Pokémon</mat-label>
+
+  <input
+    matInput
+    [formControl]="searchControl"
+    placeholder="Type a Pokémon name..."
+  />
+</mat-form-field>
+
+<div class="pokemon-grid">
+  @for (
+    pokemon of pagedPokemon;
+    track pokemon.id
+  ) {
+<app-pokemon-card
+  [id]="pokemon.id"
+  [name]="pokemon.name">
+</app-pokemon-card>  }
+</div>
+
+<mat-paginator
+  [length]="filteredPokemon.length"
+  [pageSize]="pageSize"
+  [pageIndex]="pageIndex"
+  [pageSizeOptions]="[24, 48, 96]"
+  (page)="onPageChange($event)"
+>
+</mat-paginator>

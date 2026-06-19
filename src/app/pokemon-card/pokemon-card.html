@@ -1,0 +1,18 @@
+<mat-card class="pokemon-card">
+  <img
+    mat-card-image
+    [src]="imageUrl"
+    [alt]="name()"
+    loading="lazy"
+  />
+
+  <mat-card-content>
+    <div class="card-id">
+      #{{ id() }}
+    </div>
+
+    <div class="card-name">
+      {{ name() }}
+    </div>
+  </mat-card-content>
+</mat-card>
