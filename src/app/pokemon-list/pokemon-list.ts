@@ -1,20 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject,  OnInit, } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-
-import {  debounceTime,  distinctUntilChanged,  map,  startWith} from 'rxjs/operators';
-
-import { combineLatest } from 'rxjs';
-
+import { distinctUntilChanged,  map,  startWith} from 'rxjs/operators';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-
 import { AsyncPipe } from '@angular/common';
-
 import { PokemonCard } from '../pokemon-card/pokemon-card';
-
 import { PokemonItem, PokemonResponse  } from '../pokemon.model';
 
 @Component({
@@ -66,14 +58,13 @@ export class PokemonList implements OnInit {
     this.searchControl.valueChanges
       .pipe(
         startWith(''),
-        debounceTime(250),
         distinctUntilChanged()
       )
       .subscribe(search => {
         const value = search.toLowerCase().trim();
 
         this.filteredPokemon = this.pokemon.filter(p =>
-          p.name.includes(value)
+          p.name.toLowerCase().includes(value)
         );
 
         this.pageIndex = 0;
