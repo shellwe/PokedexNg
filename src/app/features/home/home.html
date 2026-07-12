@@ -1,0 +1,7 @@
+@if (pokemonStore.loading()) {
+  <p>Loading Pokémon...</p>
+} @else if (pokemonStore.error()) {
+  <p>{{ pokemonStore.error() }}</p>
+} @else {
+  <p>Loaded {{ pokemonStore.pokemon().length }} Pokémon.</p>
+}
