@@ -1,0 +1,16 @@
+<mat-card class="pokemon-card" [routerLink]="['/pokemon', pokemon().name]">
+  <img
+    mat-card-image
+    [src]="artworkUrl()"
+    [alt]="pokemon().name" />
+
+  <mat-card-content>
+    <div class="pokemon-number">
+      #{{ pokemon().id.toString().padStart(4, '0') }}
+    </div>
+
+    <h2>
+      {{ pokemon().name }}
+    </h2>
+  </mat-card-content>
+</mat-card>

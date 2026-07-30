@@ -1,7 +1,41 @@
+<mat-form-field appearance="outline">
+  <mat-label>Search Pokémon</mat-label>
+
+<input
+  matInput
+  type="text"
+  placeholder="Type a Pokémon name..."
+  [formControl]="searchControl"
+/>
+</mat-form-field>
+
+@let pagedPokemon = pokemonStore.pagedPokemon();
+@let totalFilteredPokemon = pokemonStore.totalFilteredPokemon();
+
 @if (pokemonStore.loading()) {
   <p>Loading Pokémon...</p>
 } @else if (pokemonStore.error()) {
   <p>{{ pokemonStore.error() }}</p>
 } @else {
-  <p>Loaded {{ pokemonStore.pokemon().length }} Pokémon.</p>
+  <p>
+    Showing {{ pagedPokemon.length }}
+    of {{ totalFilteredPokemon }} Pokémon
+  </p>
+
+<div class="pokemon-grid">
+  @for (pokemon of pagedPokemon; track pokemon.id) {
+    <app-pokemon-card
+      [pokemon]="pokemon">
+    </app-pokemon-card>
+  }
+</div>
+
 }
+
+<mat-paginator
+  [length]="totalFilteredPokemon"
+  [pageIndex]="pokemonStore.currentPage()"
+  [pageSize]="pokemonStore.pageSize()"
+  [pageSizeOptions]="[10, 20, 50, 100]"
+  (page)="onPageChange($event)">
+</mat-paginator>

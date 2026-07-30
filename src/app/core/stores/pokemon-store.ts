@@ -7,75 +7,118 @@ import { PokemonSpeciesApi } from '../models/pokemon-species-api';
 import { PokemonSpeciesResponse } from '../models/pokemon-species-response';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class PokemonStore {
-  private readonly http = inject(HttpClient);
+    // ---------------------------------
+    // Dependencies
+    // ---------------------------------
 
-  private readonly _pokemon = signal<PokemonSpecies[]>([]);
-  readonly pokemon = this._pokemon.asReadonly();
+    private readonly http = inject(HttpClient);
 
-  private readonly _loading = signal(false);
-  readonly loading = this._loading.asReadonly();
+    // ---------------------------------
+    // Writable State
+    // ---------------------------------
 
-  private readonly _error = signal<string | null>(null);
-  readonly error = this._error.asReadonly();
+    private readonly _pokemon = signal<PokemonSpecies[]>([]);
+    private readonly _loading = signal(false);
+    private readonly _error = signal<string | null>(null);
+    private readonly _searchText = signal('');
+    private readonly _currentPage = signal(0);
+    private readonly _pageSize = signal(20);
 
-  private readonly _searchText = signal('');
-  readonly searchText = this._searchText.asReadonly();
+    // ---------------------------------
+    // Readonly State
+    // ---------------------------------
 
-  private readonly _currentPage = signal(0);
-  readonly currentPage = this._currentPage.asReadonly();
+    readonly pokemon = this._pokemon.asReadonly();
+    readonly loading = this._loading.asReadonly();
+    readonly error = this._error.asReadonly();
+    readonly searchText = this._searchText.asReadonly();
+    readonly currentPage = this._currentPage.asReadonly();
+    readonly pageSize = this._pageSize.asReadonly();
 
-  private readonly _pageSize = signal(20);
-  readonly pageSize = this._pageSize.asReadonly();
+    // ---------------------------------
+    // Computed State
+    // ---------------------------------
 
-  readonly filteredPokemon = computed(() => {
-    const search = this._searchText().trim().toLowerCase();
+    readonly filteredPokemon = computed(() => {
+        const search = this._searchText().trim().toLowerCase();
 
-    if (!search) {
-      return this._pokemon();
-    }
+        if (!search) {
+            return this._pokemon();
+        }
 
-    return this._pokemon().filter((pokemon) =>
-      pokemon.name.includes(search)
+        return this._pokemon().filter((pokemon) =>
+            pokemon.name.includes(search)
+        );
+    });
+
+    readonly pagedPokemon = computed(() => {
+        const start = this._currentPage() * this._pageSize();
+        const end = start + this._pageSize();
+
+        return this.filteredPokemon().slice(start, end);
+    });
+
+    readonly totalFilteredPokemon = computed(() =>
+        this.filteredPokemon().length
     );
-  });
 
-  loadPokemon(): void {
-    if (this._pokemon().length > 0) {
-      return;
+    // ---------------------------------
+    // Public Methods
+    // ---------------------------------
+
+    loadPokemon(): void {
+        if (this._pokemon().length > 0) {
+            return;
+        }
+
+        this._loading.set(true);
+        this._error.set(null);
+
+        this.http
+            .get<PokemonSpeciesResponse>(
+                'https://pokeapi.co/api/v2/pokemon-species?limit=2000'
+            )
+            .pipe(
+                map((response) =>
+                    response.results.map((pokemon) => this.mapPokemonSpecies(pokemon))
+                ),
+                finalize(() => this._loading.set(false))
+            )
+            .subscribe({
+                next: (pokemon) => this._pokemon.set(pokemon),
+                error: () => this._error.set('Unable to load Pokémon.'),
+            });
     }
 
-    this._loading.set(true);
-    this._error.set(null);
+    setSearchText(searchText: string): void {
+        this._searchText.set(searchText.trim());
+        this._currentPage.set(0);
+    }
 
-    this.http
-      .get<PokemonSpeciesResponse>(
-        'https://pokeapi.co/api/v2/pokemon-species?limit=2000'
-      )
-      .pipe(
-        map((response) =>
-          response.results.map((pokemon) => this.mapPokemonSpecies(pokemon))
-        ),
-        finalize(() => this._loading.set(false))
-      )
-      .subscribe({
-        next: (pokemon) => this._pokemon.set(pokemon),
-        error: () => this._error.set('Unable to load Pokémon.'),
-      });
-  }
+    updatePagination(pageIndex: number, pageSize: number): void {
+        this._currentPage.set(pageIndex);
+        this._pageSize.set(pageSize);
+    }
 
-  setSearchText(searchText: string): void {
-    this._searchText.set(searchText.trim());
-    this._currentPage.set(0);
-  }
+    // ---------------------------------
+    // Private Methods
+    // ---------------------------------
 
-  private mapPokemonSpecies(apiPokemon: PokemonSpeciesApi): PokemonSpecies {
-    return {
-      id: Number(apiPokemon.url.split('/').filter(Boolean).pop()),
-      name: apiPokemon.name,
-      url: apiPokemon.url,
-    };
-  }
+    private mapPokemonSpecies(apiPokemon: PokemonSpeciesApi): PokemonSpecies {
+        return {
+            id: this.extractPokemonId(apiPokemon.url),
+            name: apiPokemon.name,
+            url: apiPokemon.url,
+        };
+    }
+
+    private extractPokemonId(url: string): number {
+        const segments = url.split('/').filter(Boolean);
+        const id = segments.pop();
+
+        return Number(id);
+    }
 }
