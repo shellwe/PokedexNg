@@ -1,1 +1,72 @@
-<h1>{{ name }}</h1>
+@let detail = pokemon.value();
+
+<a routerLink="/">
+  <button mat-icon-button aria-label="Back to list">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+</a>
+
+@if (pokemon.isLoading()) {
+  <div class="state">
+    <mat-spinner diameter="48" />
+    <p>Loading {{ name() }}...</p>
+  </div>
+} @else if (pokemon.error()) {
+  <div class="state">
+    <p>Couldn't load {{ name() }}.</p>
+    <button mat-stroked-button (click)="pokemon.reload()">Try again</button>
+  </div>
+} @else if (detail) {
+  <mat-card class="pokemon-detail">
+    <div class="pokemon-detail__header">
+      <img class="pokemon-detail__image" [src]="detail.imageUrl" [alt]="detail.name" />
+
+      <div>
+        <div class="pokemon-number">#{{ detail.id.toString().padStart(4, '0') }}</div>
+        <h1>{{ detail.name }}</h1>
+        <div class="chip-row">
+          @for (type of detail.types; track type) {
+            <mat-chip>{{ type }}</mat-chip>
+          }
+        </div>
+      </div>
+    </div>
+
+    <mat-card-content>
+      <section class="pokemon-detail__measurements">
+        <div>
+          <span class="label">Height</span>
+          <span>{{ detail.heightInMeters }} m</span>
+        </div>
+        <div>
+          <span class="label">Weight</span>
+          <span>{{ detail.weightInKilograms }} kg</span>
+        </div>
+      </section>
+
+      <section>
+        <h2>Abilities</h2>
+        <div class="chip-row">
+          @for (ability of detail.abilities; track ability.name) {
+            <mat-chip>{{ ability.name }}{{ ability.isHidden ? ' (hidden)' : '' }}</mat-chip>
+          }
+        </div>
+      </section>
+
+      <section>
+        <h2>Base Stats</h2>
+        <div class="stats">
+          @for (stat of detail.stats; track stat.name) {
+            <div class="stat-row">
+              <span class="stat-name">{{ stat.name }}</span>
+              <div class="stat-bar">
+                <div class="stat-bar__fill" [style.width.%]="(stat.base / 255) * 100"></div>
+              </div>
+              <span class="stat-value">{{ stat.base }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    </mat-card-content>
+  </mat-card>
+}
