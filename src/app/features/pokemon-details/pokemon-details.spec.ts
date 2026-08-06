@@ -16,6 +16,31 @@ const MOCK_RAW_POKEMON = {
   stats: [{ base_stat: 45, stat: { name: 'hp', url: '' } }],
 };
 
+const MOCK_RAW_SPECIES = {
+  evolution_chain: { url: 'https://pokeapi.co/api/v2/evolution-chain/1/' },
+};
+
+const MOCK_RAW_EVOLUTION_CHAIN = {
+  chain: {
+    species: { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon-species/1/' },
+    evolution_details: [],
+    evolves_to: [
+      {
+        species: { name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon-species/2/' },
+        evolution_details: [{ trigger: { name: 'level-up' }, min_level: 16, item: null }],
+        evolves_to: [],
+      },
+    ],
+  },
+};
+
+function flushPokemonDetailRequests(httpMock: HttpTestingController): void {
+  httpMock.expectOne('https://pokeapi.co/api/v2/pokemon/bulbasaur').flush(MOCK_RAW_POKEMON);
+  httpMock
+    .expectOne('https://pokeapi.co/api/v2/pokemon-species/bulbasaur')
+    .flush(MOCK_RAW_SPECIES);
+}
+
 describe('PokemonDetails', () => {
   let component: PokemonDetails;
   let fixture: ComponentFixture<PokemonDetails>;
@@ -39,18 +64,37 @@ describe('PokemonDetails', () => {
     httpMock.verify();
   });
 
-  it('should create', () => {
+  it('should create', async () => {
     expect(component).toBeTruthy();
-    httpMock.expectOne('https://pokeapi.co/api/v2/pokemon/bulbasaur').flush(MOCK_RAW_POKEMON);
+    flushPokemonDetailRequests(httpMock);
+    // Let the microtask queue drain so the evolutionChain resource's effect
+    // (which reacts to species.value() resolving) has a chance to run and
+    // issue its request before we look for it.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+    httpMock
+      .expectOne('https://pokeapi.co/api/v2/evolution-chain/1/')
+      .flush(MOCK_RAW_EVOLUTION_CHAIN);
+    await fixture.whenStable();
   });
 
-  it('fetches and renders the requested pokemon', async () => {
-    httpMock.expectOne('https://pokeapi.co/api/v2/pokemon/bulbasaur').flush(MOCK_RAW_POKEMON);
+  it('fetches and renders the requested pokemon and its evolution chain', async () => {
+    flushPokemonDetailRequests(httpMock);
+    // Let the microtask queue drain so the evolutionChain resource's effect
+    // (which reacts to species.value() resolving) has a chance to run and
+    // issue its request before we look for it.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+    httpMock
+      .expectOne('https://pokeapi.co/api/v2/evolution-chain/1/')
+      .flush(MOCK_RAW_EVOLUTION_CHAIN);
     await fixture.whenStable();
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('bulbasaur');
     expect(compiled.textContent).toContain('grass');
+    expect(compiled.textContent).toContain('ivysaur');
+    expect(compiled.textContent).toContain('Level 16');
   });
 });

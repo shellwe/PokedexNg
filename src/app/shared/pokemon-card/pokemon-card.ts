@@ -1,6 +1,7 @@
 import { Component, input, computed } from '@angular/core';
 
 import { PokemonSpecies } from '../../core/models/pokemon-species';
+import { getOfficialArtworkUrl } from '../../core/utils/pokeapi.util';
 
 import { MatCardModule } from '@angular/material/card';
 import { RouterLink } from '@angular/router';
@@ -12,7 +13,5 @@ import { RouterLink } from '@angular/router';
 })
 export class PokemonCard {
   readonly pokemon = input.required<PokemonSpecies>();
-  readonly artworkUrl = computed(() =>
-    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${this.pokemon().id}.png`
-  );  
+  readonly artworkUrl = computed(() => getOfficialArtworkUrl(this.pokemon().id));
 }

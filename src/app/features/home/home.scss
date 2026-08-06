@@ -1,3 +1,9 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .pokemon-grid {
   display: grid;
   gap: 1rem;

@@ -9,6 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { PokemonDetailApi } from '../../core/models/pokemon-detail-api';
 import { mapPokemonDetail } from '../../core/models/pokemon-detail';
+import { PokemonSpeciesDetailApi } from '../../core/models/pokemon-species-detail-api';
+import { PokemonEvolutionChainApi } from '../../core/models/pokemon-evolution-chain-api';
+import { mapEvolutionChain } from '../../core/models/pokemon-evolution-stage';
+import { EvolutionStage } from '../../shared/evolution-stage/evolution-stage';
 
 @Component({
   selector: 'app-pokemon-details',
@@ -19,6 +23,7 @@ import { mapPokemonDetail } from '../../core/models/pokemon-detail';
     MatProgressSpinnerModule,
     MatButtonModule,
     MatIconModule,
+    EvolutionStage,
   ],
   templateUrl: './pokemon-details.html',
   styleUrl: './pokemon-details.scss',
@@ -31,5 +36,19 @@ export class PokemonDetails {
   readonly pokemon = httpResource(
     () => `https://pokeapi.co/api/v2/pokemon/${this.name()}`,
     { parse: (raw) => mapPokemonDetail(raw as PokemonDetailApi) }
+  );
+
+  // Intermediate lookup: species detail is where the evolution chain URL lives.
+  private readonly species = httpResource(
+    () => `https://pokeapi.co/api/v2/pokemon-species/${this.name()}`,
+    { parse: (raw) => raw as PokemonSpeciesDetailApi }
+  );
+
+  // Depends on `species` above: its URL function reads `species.value()`, so
+  // this resource stays idle until the species lookup resolves, then fetches
+  // automatically once a real URL is available.
+  readonly evolutionChain = httpResource(
+    () => this.species.value()?.evolution_chain.url,
+    { parse: (raw) => mapEvolutionChain(raw as PokemonEvolutionChainApi) }
   );
 }

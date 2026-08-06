@@ -1,13 +1,43 @@
-<mat-form-field appearance="outline">
-  <mat-label>Search Pokémon</mat-label>
+<div class="filters">
+  <mat-form-field appearance="outline">
+    <mat-label>Search Pokémon</mat-label>
 
-<input
-  matInput
-  type="text"
-  placeholder="Type a Pokémon name..."
-  [formControl]="searchControl"
-/>
-</mat-form-field>
+    <input
+      matInput
+      type="text"
+      placeholder="Type a Pokémon name..."
+      [formControl]="searchControl"
+    />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Type</mat-label>
+    <mat-select
+      [value]="pokemonStore.selectedType()"
+      (selectionChange)="onTypeChange($event.value)">
+      <mat-option [value]="null">All types</mat-option>
+      @for (type of pokemonTypes; track type) {
+        <mat-option [value]="type">{{ type }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Generation</mat-label>
+    <mat-select
+      [value]="pokemonStore.selectedGeneration()"
+      (selectionChange)="onGenerationChange($event.value)">
+      <mat-option [value]="null">All generations</mat-option>
+      @for (generation of pokemonStore.generations(); track generation.id) {
+        <mat-option [value]="generation.id">{{ generation.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (pokemonStore.typeLoading() || pokemonStore.generationLoading()) {
+  <p>Filtering...</p>
+}
 
 @let pagedPokemon = pokemonStore.pagedPokemon();
 @let totalFilteredPokemon = pokemonStore.totalFilteredPokemon();

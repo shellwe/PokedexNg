@@ -1,4 +1,5 @@
 @let detail = pokemon.value();
+@let evolution = evolutionChain.value();
 
 <a routerLink="/">
   <button mat-icon-button aria-label="Back to list">
@@ -66,6 +67,19 @@
             </div>
           }
         </div>
+      </section>
+
+      <section>
+        <h2>Evolution Chain</h2>
+        @if (evolutionChain.isLoading()) {
+          <p>Loading evolution chain...</p>
+        } @else if (evolutionChain.error()) {
+          <p>Couldn't load the evolution chain.</p>
+        } @else if (evolution) {
+          <div class="evolution-wrapper">
+            <app-evolution-stage [stage]="evolution" />
+          </div>
+        }
       </section>
     </mat-card-content>
   </mat-card>

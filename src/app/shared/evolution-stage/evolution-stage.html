@@ -1,0 +1,17 @@
+<div class="evolution-stage">
+  <a class="evolution-stage__pokemon" [routerLink]="['/pokemon', stage().name]">
+    @if (stage().trigger) {
+      <span class="evolution-stage__trigger">{{ stage().trigger }}</span>
+    }
+    <img [src]="stage().imageUrl" [alt]="stage().name" />
+    <span class="evolution-stage__name">{{ stage().name }}</span>
+  </a>
+
+  @if (stage().evolvesTo.length > 0) {
+    <div class="evolution-stage__children">
+      @for (child of stage().evolvesTo; track child.id) {
+        <app-evolution-stage [stage]="child" />
+      }
+    </div>
+  }
+</div>

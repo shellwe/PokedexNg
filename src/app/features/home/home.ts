@@ -9,8 +9,10 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 
 import { PokemonStore } from '../../core/stores/pokemon-store';
+import { POKEMON_TYPES } from '../../core/constants/pokemon-types';
 
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
@@ -22,6 +24,7 @@ import { PokemonCard } from '../../shared/pokemon-card/pokemon-card';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatPaginatorModule,
     PokemonCard
   ],
@@ -31,6 +34,8 @@ import { PokemonCard } from '../../shared/pokemon-card/pokemon-card';
 })
 export class Home implements OnInit {
   readonly pokemonStore = inject(PokemonStore);
+
+  readonly pokemonTypes = POKEMON_TYPES;
 
   readonly searchControl = new FormControl('', {
     nonNullable: true,
@@ -54,7 +59,16 @@ export class Home implements OnInit {
     );
   }
 
+  onTypeChange(type: string | null): void {
+    this.pokemonStore.setSelectedType(type);
+  }
+
+  onGenerationChange(generationId: number | null): void {
+    this.pokemonStore.setSelectedGeneration(generationId);
+  }
+
   ngOnInit(): void {
     this.pokemonStore.loadPokemon();
+    this.pokemonStore.loadGenerations();
   }
 }

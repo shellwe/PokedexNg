@@ -1,4 +1,5 @@
 import { PokemonDetailApi } from './pokemon-detail-api';
+import { getOfficialArtworkUrl } from '../utils/pokeapi.util';
 
 export interface PokemonDetail {
   id: number;
@@ -17,7 +18,7 @@ export function mapPokemonDetail(api: PokemonDetailApi): PokemonDetail {
     name: api.name,
     imageUrl:
       api.sprites.other?.['official-artwork']?.front_default ??
-      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${api.id}.png`,
+      getOfficialArtworkUrl(api.id),
     // PokeAPI reports height in decimetres and weight in hectograms.
     heightInMeters: api.height / 10,
     weightInKilograms: api.weight / 10,
