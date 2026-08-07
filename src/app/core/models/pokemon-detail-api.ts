@@ -23,4 +23,14 @@ export interface PokemonDetailApi {
     base_stat: number;
     stat: { name: string; url: string };
   }[];
+  moves: {
+    move: { name: string; url: string };
+    version_group_details: {
+      level_learned_at: number;
+      move_learn_method: { name: string };
+    }[];
+  }[];
+  game_indices: {
+    version: { name: string };
+  }[];
 }

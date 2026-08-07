@@ -14,10 +14,29 @@ const MOCK_RAW_POKEMON = {
   types: [{ slot: 1, type: { name: 'grass', url: '' } }],
   abilities: [{ ability: { name: 'overgrow', url: '' }, is_hidden: false, slot: 1 }],
   stats: [{ base_stat: 45, stat: { name: 'hp', url: '' } }],
+  moves: [
+    {
+      move: { name: 'tackle', url: 'https://pokeapi.co/api/v2/move/33/' },
+      version_group_details: [
+        { level_learned_at: 1, move_learn_method: { name: 'level-up' } },
+      ],
+    },
+    {
+      move: { name: 'vine-whip', url: 'https://pokeapi.co/api/v2/move/22/' },
+      version_group_details: [
+        { level_learned_at: 3, move_learn_method: { name: 'level-up' } },
+      ],
+    },
+  ],
+  game_indices: [{ version: { name: 'red' } }, { version: { name: 'blue' } }],
 };
 
 const MOCK_RAW_SPECIES = {
   evolution_chain: { url: 'https://pokeapi.co/api/v2/evolution-chain/1/' },
+  genera: [{ genus: 'Seed Pokémon', language: { name: 'en' } }],
+  flavor_text_entries: [
+    { flavor_text: 'A strange seed was\nplanted on its back.', language: { name: 'en' } },
+  ],
 };
 
 const MOCK_RAW_EVOLUTION_CHAIN = {
@@ -95,6 +114,34 @@ describe('PokemonDetails', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('bulbasaur');
     expect(compiled.textContent).toContain('grass');
     expect(compiled.textContent).toContain('ivysaur');
-    expect(compiled.textContent).toContain('Level 16');
+    expect(compiled.textContent).toContain('Level up');
+    expect(compiled.textContent).toContain('Seed Pokémon');
+    expect(compiled.textContent).toContain('A strange seed was planted on its back.');
+    expect(compiled.textContent).toContain('tackle');
+    expect(compiled.textContent).toContain('Red');
+  });
+
+  it('fetches a move type on demand and caches it', async () => {
+    flushPokemonDetailRequests(httpMock);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+    httpMock
+      .expectOne('https://pokeapi.co/api/v2/evolution-chain/1/')
+      .flush(MOCK_RAW_EVOLUTION_CHAIN);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    component.loadMoveType(component.pokemon.value()!.levelUpMoves[0]);
+    httpMock
+      .expectOne('https://pokeapi.co/api/v2/move/33/')
+      .flush({ type: { name: 'normal' } });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.moveTypes().get('tackle')).toBe('normal');
+
+    // Requesting the same move again should not issue a second HTTP call.
+    component.loadMoveType(component.pokemon.value()!.levelUpMoves[0]);
+    httpMock.expectNone('https://pokeapi.co/api/v2/move/33/');
   });
 });

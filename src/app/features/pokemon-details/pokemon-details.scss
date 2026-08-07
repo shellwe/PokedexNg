@@ -62,6 +62,42 @@ section {
   }
 }
 
+.pokemon-genus {
+  color: gray;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.pokemon-flavor-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.moves {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.move-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.move-level {
+  color: gray;
+  font-size: 0.8rem;
+  width: 48px;
+}
+
+.move-name {
+  flex: 1;
+  text-transform: capitalize;
+}
+
 .evolution-wrapper {
   overflow-x: auto;
   padding-bottom: 0.5rem;

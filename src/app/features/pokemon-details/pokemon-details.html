@@ -1,4 +1,5 @@
 @let detail = pokemon.value();
+@let speciesInfo = species.value();
 @let evolution = evolutionChain.value();
 
 <a routerLink="/">
@@ -25,6 +26,9 @@
       <div>
         <div class="pokemon-number">#{{ detail.id.toString().padStart(4, '0') }}</div>
         <h1>{{ detail.name }}</h1>
+        @if (speciesInfo && speciesInfo.genus) {
+          <p class="pokemon-genus">{{ speciesInfo.genus }}</p>
+        }
         <div class="chip-row">
           @for (type of detail.types; track type) {
             <mat-chip>{{ type }}</mat-chip>
@@ -34,6 +38,12 @@
     </div>
 
     <mat-card-content>
+      @if (speciesInfo && speciesInfo.flavorText) {
+        <section>
+          <p class="pokemon-flavor-text">{{ speciesInfo.flavorText }}</p>
+        </section>
+      }
+
       <section class="pokemon-detail__measurements">
         <div>
           <span class="label">Height</span>
@@ -68,6 +78,39 @@
           }
         </div>
       </section>
+
+      <section>
+        <h2>Moves (Level Up)</h2>
+        <div class="moves">
+          @for (move of detail.levelUpMoves; track move.name) {
+            @let moveType = moveTypes().get(move.name);
+
+            <div class="move-row">
+              <span class="move-level">Lv. {{ move.level }}</span>
+              <span class="move-name">{{ move.name }}</span>
+
+              @if (moveType) {
+                <mat-chip>{{ moveType }}</mat-chip>
+              } @else if (loadingMoveTypes().has(move.name)) {
+                <mat-spinner diameter="16" />
+              } @else {
+                <button mat-button (click)="loadMoveType(move)">Show type</button>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      @if (detail.games.length > 0) {
+        <section>
+          <h2>Games</h2>
+          <div class="chip-row">
+            @for (game of detail.games; track game) {
+              <mat-chip>{{ game }}</mat-chip>
+            }
+          </div>
+        </section>
+      }
 
       <section>
         <h2>Evolution Chain</h2>

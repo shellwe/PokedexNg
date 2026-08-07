@@ -46,7 +46,11 @@ function describeEvolutionTrigger(details: PokemonEvolutionDetailApi[]): string 
   }
 
   if (detail.min_level) {
-    return `Level ${detail.min_level}`;
+    // Not showing the specific number: the required level can differ across
+    // game versions (see PokemonEvolutionDetailApi), and we only read the
+    // first evolution_details entry, so a specific number here would claim
+    // more precision than we actually have.
+    return 'Level up';
   }
 
   if (detail.trigger?.name === 'trade') {
